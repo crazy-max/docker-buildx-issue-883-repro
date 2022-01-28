@@ -1,0 +1,84 @@
+version: "3.8"
+
+services:
+  # MySQL (5.7)
+  issue-repro-mysql.ebanx.local:
+    image: mysql:5.7
+    platform: linux/amd64
+    container_name: issue-repro-mysql.ebanx.local
+    restart: "no"
+    depends_on:
+      - nginx-proxy
+      - dnsmasq.ebanx.local
+    volumes:
+      - ./.data/db:/var/lib/mysql # Persistent MySQL data
+      - ./docker/mysql:/docker-entrypoint-initdb.d # Runs each script in folder on creation
+    ports:
+      - "3307:3307"
+    environment:
+      - VIRTUAL_HOST=issue-repro-mysql.ebanx.local
+      - MYSQL_ROOT_PASSWORD=issue
+      - MYSQL_DATABASE=issue
+      - MYSQL_USER=issue
+      - MYSQL_PASSWORD=issue
+      - MYSQL_TCP_PORT=3307
+
+  # Redis
+  issue-repro-redis.ebanx.local:
+    image: redis:6.0
+    container_name: issue-repro-redis.ebanx.local
+    depends_on:
+      - nginx-proxy
+      - dnsmasq.ebanx.local
+    volumes:
+      - ./.data/redis:/redis-data
+    ports:
+       - "6379:6379"
+    environment:
+      - VIRTUAL_HOST=issue-repro-redis.ebanx.local
+
+  # SQS and SNS
+  issue-repro-notifications.ebanx.local:
+    image: pafortin/goaws
+    container_name: issue-repro-notifications.ebanx.local
+    depends_on:
+      - nginx-proxy
+      - dnsmasq.ebanx.local
+    volumes:
+      - ./docker/goaws/conf:/conf
+    ports:
+      - "4100:4100"
+    environment:
+      - VIRTUAL_HOST=issue-repro-notifications.ebanx.local
+
+  # Wiremock for mocking remote APIs
+  issue-repro-wiremock.ebanx.local:
+    image: wiremock/wiremock
+    container_name: issue-repro-wiremock.ebanx.local
+    depends_on:
+      - nginx-proxy
+      - dnsmasq.ebanx.local
+    volumes:
+      - ./docker/wiremock/mappings:/home/wiremock/mappings
+    ports:
+      - "8181:8181"
+    environment:
+      - VIRTUAL_HOST=issue-repro-wiremock.ebanx.local
+    command: ["--port=8181", "--disable-banner=true"]
+
+  # dnsmasq and nginx-proxy to create virtual hosts *.ebanx.local
+  dnsmasq.ebanx.local:
+    image: 4km3/dnsmasq
+    ports:
+      - 127.0.0.1:5300:53/tcp
+      - 127.0.0.1:5300:53/udp
+    cap_add:
+      - NET_ADMIN
+    command: --address /local/127.0.0.1
+
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    ports:
+      - "80:80"

@@ -1,0 +1,12 @@
+# REFERENCE: https://github.com/p4tin/goaws/blob/master/app/conf/goaws.yaml
+Local:
+  Host: issue-repro-notifications.ebanx.local
+  Port: 4100
+  Region: us-east-1
+  AccountId: "100010001000"
+  LogToFile: false
+  QueueAttributeDefaults:
+    VisibilityTimeout: 30
+    ReceiveMessageWaitTimeSeconds: 10
+  Queues:
+    - Name: queue

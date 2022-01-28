@@ -1,10 +1,15 @@
-# Outputs
-dist
-coverage
-.data
-
-# Yarn
 node_modules
+dist
+docs
+coverage
+.ci
+.github
+.data
+README.md
+.vscode
+scripts
+.git
+
 .yarn/*
 !.yarn/patches
 !.yarn/releases
@@ -13,8 +18,6 @@ node_modules
 !.yarn/versions
 .pnp.*
 
-# Env files
-*.local
-
-# MacOS weirdness
-.DS_Store
+Dockerfile
+docker-compose.yml
+docker
