@@ -14,6 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Working tree check
+        run: sudo tree -f -pug -h -D
+
       - name: Start Docker Compose
         run: docker-compose up -d
 
@@ -30,6 +33,9 @@ jobs:
           key: ${{ runner.os }}-single-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-single-buildx
+
+      - name: Working tree check
+        run: sudo tree -f -pug -h -D
 
       - name: Build image
         uses: docker/build-push-action@v2
