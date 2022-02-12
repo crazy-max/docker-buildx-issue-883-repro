@@ -15,7 +15,10 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Working tree check
-        run: sudo tree -f -pug -h -D
+        run: sudo tree -a -f -pug -h -D
+
+      - name: Start Docker Compose
+        run: docker-compose up -d
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -31,6 +34,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-single-buildx
 
+      - name: Working tree check
+        run: sudo tree -a -f -pug -h -D
+
       - name: Build image
         uses: docker/build-push-action@v2
         with:
@@ -44,9 +50,6 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
             CI=true
-
-      - name: Start Docker Compose
-        run: docker-compose up -d
 
       - name: E2E Tests
         run: docker run --net="issue-repro_default" builder:latest /bin/sh -c 'yarn test:e2e:ci;'
